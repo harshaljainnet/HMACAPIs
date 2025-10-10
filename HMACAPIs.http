@@ -1,0 +1,6 @@
+@HMACAPIs_HostAddress = http://localhost:5289
+
+GET {{HMACAPIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
