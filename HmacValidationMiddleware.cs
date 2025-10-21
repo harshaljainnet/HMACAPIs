@@ -24,10 +24,17 @@ namespace HMACAPIs
                 return;
             }
 
-            // Build string to sign: METHOD + PATH + DATE
-            string stringToSign = $"{context.Request.Method}\n{context.Request.Path}\n{dateHeader}";
+            string path = context.Request.Path;
 
-            // Compute HMAC using secret key
+            // Extract and sort query parameters
+            var queryParams = context.Request.Query;
+            var sortedQuery = string.Join("&", queryParams.Keys.OrderBy(k => k)
+                                                   .Select(k => $"{k}={queryParams[k]}"));
+
+            // Build string to sign
+            string stringToSign = $"{context.Request.Method}\n{path}\n{sortedQuery}\n{dateHeader}";
+
+            // Compute HMAC
             byte[] keyBytes = Encoding.UTF8.GetBytes(_secretKey);
             byte[] messageBytes = Encoding.UTF8.GetBytes(stringToSign);
 
@@ -35,7 +42,12 @@ namespace HMACAPIs
             byte[] hash = hmac.ComputeHash(messageBytes);
             string computedSignature = Convert.ToBase64String(hash);
 
-            // Compare signatures
+            // Logging for debugging
+            Console.WriteLine("----- HMAC Debug -----"); 
+            Console.WriteLine("Received x-date: " + dateHeader); 
+            Console.WriteLine("Received x-signature: " + signatureHeader); 
+            Console.WriteLine("Computed string to sign: " + computedSignature);
+
             if (computedSignature != signatureHeader)
             {
                 context.Response.StatusCode = 401;
@@ -43,7 +55,6 @@ namespace HMACAPIs
                 return;
             }
 
-            // Signature valid — continue
             await _next(context);
         }
     }

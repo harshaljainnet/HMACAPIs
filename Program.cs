@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // HMAC secret
-string hmacSecretKey = "MySuperSecretKey123!";
+string hmacSecretKey = "MySuperSecretKey12345!";
 
 // HMAC middleware
 app.UseMiddleware<HmacValidationMiddleware>(hmacSecretKey);
